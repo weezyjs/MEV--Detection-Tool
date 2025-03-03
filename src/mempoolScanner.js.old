@@ -1,0 +1,23 @@
+require("dotenv").config();
+const { ethers } = require("ethers");
+const WebSocket = require("ws");
+const chalk = require("chalk");
+
+// Connect to an Ethereum node (Alchemy or Infura WebSocket)
+const provider = new ethers.WebSocketProvider(process.env.ETHEREUM_RPC_WS);
+
+console.log(chalk.blue("🔍 Listening to pending transactions in the mempool..."));
+
+provider.on("pending", async (txHash) => {
+    try {
+        const tx = await provider.getTransaction(txHash);
+        if (!tx) return;
+
+        console.log(chalk.green(`📡 New Pending Transaction: ${txHash}`));
+        console.log(chalk.yellow(`   From: ${tx.from}`));
+        console.log(chalk.yellow(`   To: ${tx.to}`));
+        console.log(chalk.yellow(`   Gas Price: ${ethers.formatUnits(tx.gasPrice, "gwei")} Gwei`));
+    } catch (error) {
+        console.log(chalk.red("❌ Error fetching transaction data"), error);
+    }
+});
